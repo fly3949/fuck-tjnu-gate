@@ -109,62 +109,62 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, onMounted } from 'vue'
+import { defineComponent, ref, reactive, onMounted, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import dayjs from '@/utils/dayjs'
 import { useStore } from 'vuex'
 
-const form = reactive({
-  name: '',
-  sex: '',
-  faculty: '',
-  major: '',
-  grade: '',
-  stuNum: '',
-  reason: '',
-  leaveTime: '',
-  backTime: '',
-  status: 0 // 每次保存都初始化出入校状态
-})
-
-function usePicker () {
-  const showLeaveTimePicker = ref(false)
-  const showBackTimePicker = ref(false)
-
-  function handleConfirmLeaveTime (value: Date) {
-    form.leaveTime = dayjs(value).format('YYYY-MM-DD HH:mm:ss')
-    if (dayjs(form.backTime).isBefore(form.leaveTime)) {
-      form.backTime = form.leaveTime
-    }
-    showLeaveTimePicker.value = false
-  }
-
-  function handleConfirmBackTime (value: Date) {
-    form.backTime = dayjs(value).format('YYYY-MM-DD HH:mm:ss')
-    if (dayjs(form.leaveTime).isAfter(form.backTime)) {
-      form.leaveTime = form.backTime
-    }
-    showBackTimePicker.value = false
-  }
-
-  return { showLeaveTimePicker, showBackTimePicker, handleConfirmLeaveTime, handleConfirmBackTime }
-}
-
-function useForm () {
-  const router = useRouter()
-  const store = useStore()
-
-  function onSubmit () {
-    console.log(form)
-    store.commit('SET_INFO', form)
-    router.push({ name: 'Home' })
-  }
-
-  return { onSubmit }
-}
-
 export default defineComponent({
   setup () {
+    const form = reactive({
+      name: '',
+      sex: '',
+      faculty: '',
+      major: '',
+      grade: '',
+      stuNum: '',
+      reason: '',
+      leaveTime: '',
+      backTime: '',
+      status: 0 // 每次保存都初始化出入校状态
+    })
+
+    function usePicker () {
+      const showLeaveTimePicker = ref(false)
+      const showBackTimePicker = ref(false)
+
+      function handleConfirmLeaveTime (value: Date) {
+        form.leaveTime = dayjs(value).format('YYYY-MM-DD HH:mm:ss')
+        if (dayjs(form.backTime).isBefore(form.leaveTime)) {
+          form.backTime = form.leaveTime
+        }
+        showLeaveTimePicker.value = false
+      }
+
+      function handleConfirmBackTime (value: Date) {
+        form.backTime = dayjs(value).format('YYYY-MM-DD HH:mm:ss')
+        if (dayjs(form.leaveTime).isAfter(form.backTime)) {
+          form.leaveTime = form.backTime
+        }
+        showBackTimePicker.value = false
+      }
+
+      return { showLeaveTimePicker, showBackTimePicker, handleConfirmLeaveTime, handleConfirmBackTime }
+    }
+
+    function useForm () {
+      const router = useRouter()
+      const store = useStore()
+
+      function onSubmit () {
+        console.log(form)
+        store.commit('SET_INFO', toRaw(form))
+        router.push({ name: 'Home' })
+      }
+
+      return { onSubmit }
+    }
+
     const router = useRouter()
     const store = useStore()
 

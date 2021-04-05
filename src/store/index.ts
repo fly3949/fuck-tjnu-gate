@@ -20,6 +20,7 @@ export default createStore({
     SET_INFO (state, info) {
       state.info = info
       storage.set('INFO', info)
+      console.log(state)
     },
     SET_STATUS (state, status) {
       state.info.status = status
