@@ -16,11 +16,37 @@
         :rules="[{ required: true, message: '请填写姓名' }]"
       />
       <van-field
+        name="radio"
+        label="性别"
+        :rules="[{ required: true, message: '请选择性别' }]"
+      >
+        <template #input>
+          <van-radio-group v-model="form.sex" direction="horizontal">
+            <van-radio name="1">男</van-radio>
+            <van-radio name="2">女</van-radio>
+          </van-radio-group>
+        </template>
+      </van-field>
+      <van-field
         v-model="form.faculty"
         name="学院"
         label="学院"
         placeholder="学院"
         :rules="[{ required: true, message: '请填写学院' }]"
+      />
+      <van-field
+        v-model="form.major"
+        name="专业"
+        label="专业"
+        placeholder="专业"
+        :rules="[{ required: true, message: '请填写专业' }]"
+      />
+      <van-field
+        v-model="form.grade"
+        name="年级"
+        label="年级"
+        placeholder="年级"
+        :rules="[{ required: false, message: '请填写年级' }]"
       />
       <van-field
         v-model="form.stuNum"
@@ -29,11 +55,13 @@
         placeholder="学号"
         :rules="[{ required: true, message: '请填写学号' }]"
       />
-      <van-field name="uploader" label="上传照片 (3MB 内)" v-model="form.photo" :rules="[{ required: true, message: '请上传照片' }]">
-        <template #input>
-          <van-uploader v-model="fileList" max-count="1" max-size="3000000" :after-read="handleReadPhoto" />
-        </template>
-      </van-field>
+      <van-field
+        v-model="form.reason"
+        name="出校事由"
+        label="出校事由"
+        placeholder="出校事由"
+        :rules="[{ required: true, message: '请填写出校事由' }]"
+      />
       <van-field
         v-model="form.leaveTime"
         readonly
@@ -81,29 +109,30 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, onMounted, Ref } from 'vue'
+import { defineComponent, ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import dayjs from '@/utils/dayjs'
 import { useStore } from 'vuex'
 
 const form = reactive({
-  photo: '',
   name: '',
+  sex: '',
   faculty: '',
+  major: '',
+  grade: '',
   stuNum: '',
+  reason: '',
   leaveTime: '',
   backTime: '',
   status: 0 // 每次保存都初始化出入校状态
 })
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fileList : Ref<Array<any>> = ref([])
 
 function usePicker () {
   const showLeaveTimePicker = ref(false)
   const showBackTimePicker = ref(false)
 
   function handleConfirmLeaveTime (value: Date) {
-    form.leaveTime = dayjs(value).format('YYYY-MM-DD HH:mm')
+    form.leaveTime = dayjs(value).format('YYYY-MM-DD HH:mm:ss')
     if (dayjs(form.backTime).isBefore(form.leaveTime)) {
       form.backTime = form.leaveTime
     }
@@ -111,7 +140,7 @@ function usePicker () {
   }
 
   function handleConfirmBackTime (value: Date) {
-    form.backTime = dayjs(value).format('YYYY-MM-DD HH:mm')
+    form.backTime = dayjs(value).format('YYYY-MM-DD HH:mm:ss')
     if (dayjs(form.leaveTime).isAfter(form.backTime)) {
       form.leaveTime = form.backTime
     }
@@ -131,12 +160,7 @@ function useForm () {
     router.push({ name: 'Home' })
   }
 
-  function handleReadPhoto (res: {file: File; status: string; message: string; content: string}) {
-    console.log(res)
-    form.photo = res.content
-  }
-
-  return { onSubmit, handleReadPhoto }
+  return { onSubmit }
 }
 
 export default defineComponent({
@@ -152,19 +176,19 @@ export default defineComponent({
       const info = store.state.info
 
       if (info) {
-        form.photo = info.photo
         form.name = info.name
+        form.sex = info.sex
         form.faculty = info.faculty
+        form.major = info.major
+        form.grade = info.grade
         form.stuNum = info.stuNum
-        form.leaveTime = info.leaveTime ? info.leaveTime : dayjs().format('YYYY-MM-DD HH:mm')
-        form.backTime = info.backTime ? info.backTime : dayjs().format('YYYY-MM-DD HH:mm')
-        if (form.photo) {
-          fileList.value = [{ content: form.photo }]
-        }
+        form.reason = info.reason
+        form.leaveTime = info.leaveTime ? info.leaveTime : dayjs().format('YYYY-MM-DD HH:mm:ss')
+        form.backTime = info.backTime ? info.backTime : dayjs().format('YYYY-MM-DD HH:mm:ss')
       }
     })
 
-    return { ...usePicker(), ...useForm(), form, fileList, onClickLeft }
+    return { ...usePicker(), ...useForm(), form, onClickLeft }
   }
 })
 </script>

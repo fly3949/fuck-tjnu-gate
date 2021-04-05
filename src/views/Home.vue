@@ -1,30 +1,22 @@
 <template>
-  <div class="wrapper" :class="[backgroundColorClass]">
+  <div class="wrapper">
     <div class="body">
-      <div class="logo"><img src="@/assets/logo.png" @click="handleOpenSetting"></div>
-      <Content :state="state" @out="showOutModal = true" @enter="showEnterModal = true" />
+      <Content :state="state" @out="handleOutSchool" @enter="handleEnterSchool" @setting="handleOpenSetting" />
     </div>
-
-    <Modal v-model="showOutModal" @confirm="handleOutSchool" @cancel="showOutModal = false" title="出校确认">确认是否出校？</Modal>
-    <Modal v-model="showEnterModal" @confirm="handleEnterSchool" @cancel="showEnterModal = false" title="进校确认">确认是否进校？</Modal>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, ref, defineComponent, onMounted, provide } from 'vue'
+import { computed, defineComponent, onMounted, provide } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import Content from '@/components/Content.vue'
 import { Toast } from 'vant'
 import dayjs from '@/utils/dayjs'
-import Modal from '@/components/Modal.vue'
-
-const showOutModal = ref(false)
-const showEnterModal = ref(false)
 
 export default defineComponent({
   name: 'Home',
-  components: { Content, Modal },
+  components: { Content },
   setup () {
     const router = useRouter()
     const store = useStore()
@@ -52,7 +44,7 @@ export default defineComponent({
         return 'out'
       }
       if (form.value.status === 3) {
-        return 'forbidden'
+        return 'enter'
       }
 
       if (dayjs().isBetween(form.value.leaveTime, form.value.backTime, null, '[]')) {
@@ -62,96 +54,19 @@ export default defineComponent({
       return 'forbidden'
     })
 
-    const backgroundColorClass = computed(() => {
-      if (state.value.localeCompare('pass') === 0) {
-        return 'green'
-      }
-      if (state.value.localeCompare('out') === 0) {
-        return 'blue'
-      }
-
-      return 'red'
-    })
-
     function handleOutSchool () {
-      showOutModal.value = false
       store.commit('SET_STATUS', 2)
+      Toast.success('提交成功')
     }
 
     function handleEnterSchool () {
-      showEnterModal.value = false
       store.commit('SET_STATUS', 3)
+      Toast.success('提交成功')
     }
 
     provide('info', form.value)
 
-    return { handleOpenSetting, state, backgroundColorClass, handleOutSchool, handleEnterSchool, showOutModal, showEnterModal }
+    return { handleOpenSetting, state, handleOutSchool, handleEnterSchool }
   }
 })
 </script>
-
-<style lang="scss" scoped>
-.wrapper {
-  width: 100%;
-  max-width: 750px;
-  margin: 0 auto;
-  position: relative;
-
-  &:after {
-    content: "";
-    position: absolute;
-    z-index: 1;
-    width: 100%;
-    height: 633px;
-    top: 0;
-  }
-}
-
-.body {
-  position: relative;
-  z-index: 2;
-  overflow: hidden;
-  padding-bottom: 40px;
-
-  .logo {
-    text-align: center;
-    margin: 43px 0 36px;
-  }
-}
-
-@media screen and (max-width: 479px) {
-  .body {
-    .logo {
-      img {
-        width: 75%;
-      }
-      margin: 20px 0;
-    }
-  }
-  .wrapper {
-    &:after {
-      height: 500px;
-    }
-  }
-}
-
-.wrapper.green:after {
-  background: #4daa40;
-}
-
-.body.green.statues {
-  background: #4daa40;
-}
-
-.wrapper.blue:after {
-  background: #0459aa;
-}
-
-.body.blue.statues {
-  background: #0459aa;
-}
-
-.wrapper.red:after {
-  background: #e03636;
-}
-</style>

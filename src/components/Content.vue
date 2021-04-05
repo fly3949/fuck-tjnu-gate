@@ -1,42 +1,126 @@
 <template>
-  <div class="content" v-if="info" :class="{['no-photo']: !((state == 'pass' || state == 'out') && info.photo)}">
-    <div class="con">
-      <div class="pic"><img v-if="(state == 'pass' || state == 'out') && info.photo" id="zpimg" :src="info.photo"></div>
-      <div class="title name">姓名：<span name="xm">{{info.name}}</span></div>
-      <div class="title xy">学院：<span name="xy">{{info.faculty}}</span></div>
-      <div class="title xh">学号：<span name="gh">{{info.stuNum}}</span></div>
-      <div class="title starttime" v-if="state != 'forbidden'">出发时间：<span name="qjkssj">{{info.leaveTime}}</span></div>
-      <div class="title endtime" v-if="state != 'forbidden'">返回时间：<span name="qjjssj">{{info.backTime}}</span></div>
-      <div class="title sk">现在时刻：<span name="sj" style="color:red">{{nowTime}}</span></div>
-      <div class="statues" id='cx_btn' v-if="state == 'pass'" @click="handleOutSchool">我要出校</div>
-      <div class="statues" id='jx_btn' v-if="state == 'out'" @click="handleEnterSchool">我要回校</div>
-      <div class="und" id="jzlogo" v-if="state == 'forbidden'"><img src="@/assets/und.png"></div>
-      <div class="undtitle" v-if="state == 'forbidden'">暂无出校权限</div>
-      <div class="undtext" v-if="state == 'forbidden'">
-        <p><span class="num">1.</span><span class="text">请您去学生外出报备申请中进行出校申请。</span></p>
-        <p><span class="num">2.</span><span class="text">使用过程中如出现误点请联系辅导员进行沟通。</span></p>
-      </div>
+  <div class="index">
+    <!-- 个人信息 -->
+    <section class="result big-size">
+      <p>
+        出校备案编号：000430009
+        <!-- <span v-if="backType==1" class="fzbig"
+          style="float:right"
+          :class="colorList[formStatus]"
+        >{{TodayBackTextList[formStatus]}}</span>
+        <span v-else class="fzbig"
+          style="float:right;"
+          :class="colorList[formStatus]"
+        >{{NoTodayBackTextList[formStatus]}}</span> -->
+      </p>
+      <p @click="handleOpenSetting">
+        <span>状态：</span>
+        <span class="bgc-grey" v-if="state === 'forbidden'">已过期</span>
+        <span class="bgc-green" v-if="state === 'pass'">当日返校已备案</span>
+        <span class="bgc-blue" v-if="state === 'out'">已离校(当日返校)</span>
+        <span class="bgc-yellow" v-if="state === 'enter'">已返校(当日返校)</span>
+        <!-- <span v-if="backType==1"
+          :class="colorList[formStatus]"
+        >{{TodayBackTextList[formStatus]}}</span>
+        <span v-else
+          :class="colorList[formStatus]"
+        >{{NoTodayBackTextList[formStatus]}}</span> -->
+      </p>
+      <p>
+        <span>出校日期：</span>
+        <span>{{info?.leaveTime && formatDate(info.leaveTime) || ''}}</span>
+      </p>
+      <p>
+        <span>出校起始时间：</span>
+        <span>{{info?.leaveTime || ''}}</span>
+      </p>
+      <p>
+        <span>出校结束时间：</span>
+        <span>{{info?.backTime || ''}}</span>
+      </p>
+      <p>
+        <span>提交时间：</span>
+        <span>{{submitTime}}</span>
+      </p>
+      <p>
+        <span>姓名：</span>
+        <span>{{info?.name || ''}}</span>
+      </p>
+      <p>
+        <span>学号：</span>
+        <span>{{info?.stuNum || ''}}</span>
+      </p>
+      <p>
+        <span>性别：</span>
+        <span>{{info?.sex == "1" ? "男" : "女" || ''}}</span>
+      </p>
+      <p>
+        <span>学院：</span>
+        <span>{{info?.faculty || ''}}</span>
+      </p>
+      <p>
+        <span>专业：</span>
+        <span>{{info?.major || ''}}</span>
+      </p>
+      <p>
+        <span>年级：</span>
+        <span>{{info?.grade || ''}}</span>
+      </p>
+      <p>
+        <span>出校事由：</span>
+        <span>{{info?.reason || ''}}</span>
+      </p>
+      <!-- <p v-if="backType!=1">
+        <span>返校日期：</span>
+        <span>{{result.record && result.record.fxrq}}</span>
+      </p> -->
+    </section>
+    <!-- <section class="result">
+      <p>
+        <span>审核意见：</span>
+        <span>{{result.record && result.record.approvalRemarks}}</span>
+      </p>
+      <p>
+        <span>审核时间：</span>
+        <span>{{result.record && result.record.approvalTime}}</span>
+      </p>
+      <p>
+        <span>审核人姓名：</span>
+        <span>{{result.record && result.record.approvalUserName}}</span>
+      </p>
+    </section> -->
+    <div class="btn-wrap" v-if="state === 'pass' || state === 'out'">
+      <div class="btn bgc-blue" @click="handleOutSchool()" v-if="state === 'pass'">确定离校</div>
+      <div class="btn bgc-blue" @click="handleEnterSchool()" v-if="state === 'out'">确定回校</div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, inject, PropType } from 'vue'
+import { defineComponent, ref, inject, PropType, computed } from 'vue'
 import { IForm } from '@/types/form'
 import dayjs from '@/utils/dayjs'
 
 export default defineComponent({
   props: {
     state: {
-      type: String as PropType<'forbidden' | 'pass' | 'out'>,
+      type: String as PropType<'forbidden' | 'pass' | 'out' | 'enter'>,
       default: 'forbidden'
     }
   },
-  emits: ['out', 'enter'],
+  emits: ['out', 'enter', 'setting'],
   setup (props, { emit }) {
     const info : undefined | IForm = inject('info')
 
     const nowTime = ref(dayjs().format('YYYY-MM-DD HH:mm:ss'))
+
+    const formatDate = (time: string) => {
+      return dayjs(time).format('YYYY-MM-DD')
+    }
+
+    const submitTime = computed(() => {
+      return dayjs(info?.leaveTime).hour(-2).format('YYYY-MM-DD HH:mm:ss')
+    })
 
     setInterval(() => {
       nowTime.value = dayjs().format('YYYY-MM-DD HH:mm:ss')
@@ -50,143 +134,99 @@ export default defineComponent({
       emit('enter')
     }
 
-    return { info, nowTime, handleOutSchool, handleEnterSchool }
+    function handleOpenSetting () {
+      emit('setting')
+    }
+
+    return { info, nowTime, formatDate, submitTime, handleOutSchool, handleEnterSchool, handleOpenSetting }
   }
 })
 </script>
 
-<style lang="scss" scoped>
-.content {
-  padding: 0 46px 122px 46px;
-  position: relative;
-  margin: 0 28px;
-
-  &.no-photo {
-    &:before {
-      top: 0;
+<style lang='scss' scoped>
+.index {
+  background-color: #f5f5f5;
+  font-size: 32px;
+  color: #333;
+  overflow: auto;
+  height: 100%;
+  padding-bottom: 80px;
+  section {
+    background-color: #fff;
+    padding-left: 30px;
+    padding-right: 30px;
+    margin-bottom: 20px;
+    .title {
+      font-weight: 520;
+      font-size: 36px;
     }
-  }
-
-  &:before {
-    position: absolute;
-    background: #fff;
-    content: "";
-    left: 0;
-    right: 0;
-    top: 97px;
-    bottom: 5px;
-    border-radius: 25px;
-    box-shadow: 0 0 6px #9f9f9f;
-  }
-
-  .con {
-    position: relative;
-    z-index: 3;
-  }
-
-  .pic {
-    text-align: center;
-    width: 100%;
-    margin-bottom: 17px;
-
-    #zpimg {
-      width: 60%;
-      max-width: 150px;
-      border-radius: 25px;
-    }
-  }
-
-  .title {
-    font-size: 26px;
-    color: #3b3b3b;
-    line-height: 69px;
-    border-bottom: 1px solid #e3e3e3;
-  }
-
-  .und {
-    text-align: center;
-    margin: 30px 0 15px;
-  }
-
-  .undtitle {
-    padding-left: 42px;
-    background: url("../assets/wr.png") no-repeat left center;
-    font-size: 22px;
-    line-height: 30px;
-    color: #e03636;
-  }
-
-  .undtext {
-    font-size: 22px;
-    line-height: 36px;
-    color: #454545;
-    margin-top: 17px;
-
     p {
-      margin-top: 12px;
-    }
-
-    span {
-      display: inline-block;
-      vertical-align: top;
-
-      &.num {
-        width: 5%;
+      font-size: 28px;
+      padding: 30px 0;
+      border-bottom: 1px solid rgba(235, 235, 235, 0.5);
+      span {
+        &:nth-child(2) {
+          max-width: 70%;
+        }
       }
-
-      &.text {
-        width: 95%;
+      .fzbig{
+        font-size:  40px;
       }
     }
   }
 
-  .statues {
-    width: 235px;
-    height: 72px;
-    line-height: 73px;
-    text-align: center;
-    border-radius: 36px;
-    color: #fff;
-    margin: 76px auto 0;
-    font-size: 28px;
-
-    &#cx_btn {
-      background: #4daa40;
-    }
-
-    &#jx_btn {
-      background: #e03636;
-    }
+  .big-size{
+    p:nth-child(2){
+        font-size: 64px;
+      }
+    p:nth-child(n+3):nth-child(-n+5){
+        font-size: 46px;
+      }
   }
 }
 
-@media screen and (max-width: 479px) {
-  .content {
-    overflow: hidden;
-    padding: 0 20px 50px;
+.bgc-lightblue {
+  color: #99daff;
+}
+.bgc-blue {
+  color: #01a3ff;
+}
+.bgc-yellow {
+  color: #f3a730;
+}
+.bgc-red {
+  color: #ed5560;
+}
+.bgc-green {
+  color: #00bc9d;
+}
+.bgc-grey {
+  color: #aaa;
+}
+.bgc-purple {
+  color: #6300bf;
+}
 
-    .undtitle {
-      font-size: 14px;
-    }
-    .undtext {
-      font-size: 14px;
-    }
-    .title {
-      font-size: 13px;
-      line-height: 49px;
-    }
-    .statues {
-      margin-top: 40px;
-      width: 70%;
-      height: 40px;
-      line-height: 40px;
-      font-size: 18px;
-      margin-top: 40px;
-      width: 70%;
-      height: 40px;
-      line-height: 40px;
-      font-size: 18px;
-    }
+.btn-wrap {
+  position: fixed;
+  bottom: 0;
+  z-index: 10;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  .btn {
+    width: 100%;
+    padding: 25px;
+    color: #fff;
+  }
+  .bgc-deepblue {
+    background-color: #3482df;
+  }
+  .bgc-blue {
+    background-color: #4199ff;
+  }
+  .bgc-black {
+    background-color: #b3b3b3;
   }
 }
 </style>
