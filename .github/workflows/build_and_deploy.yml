@@ -35,7 +35,7 @@ jobs:
       with:
           accessKeyId: ${{ secrets.ACCESS_KEY_ID }}
           accessKeySecret: ${{ secrets.ACCESS_KEY_SECRET }}
-          bucket: fuck-tgu-gate
+          bucket: fuck-tjnu-gate
           endpoint: oss-cn-beijing.aliyuncs.com
           folder: dist
           notFoundPage: index.html
