@@ -116,7 +116,7 @@ export default defineComponent({
   setup (props, { emit }) {
     const info : undefined | IForm = inject('info')
 
-    const nowTime = ref(dayjs().format('YYYY-MM-DD HH:mm:ss'))
+    const nowTime = ref(dayjs().format('HH:mm:ss'))
 
     const formatDate = (time: string) => {
       return dayjs(time).format('YYYY-MM-DD')
@@ -151,7 +151,7 @@ export default defineComponent({
 .time {
   color: red;
   font-weight: bold;
-  font-size: 80px;
+  font-size: 64px;
 }
 
 .index {
