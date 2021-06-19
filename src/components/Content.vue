@@ -31,6 +31,10 @@
         <span>{{info?.leaveTime && formatDate(info.leaveTime) || ''}}</span>
       </p>
       <p>
+        <span>当前时间：</span>
+        <span class="time">{{nowTime}}</span>
+      </p>
+      <p>
         <span>出校起始时间：</span>
         <span>{{info?.leaveTime || ''}}</span>
       </p>
@@ -123,7 +127,7 @@ export default defineComponent({
     })
 
     setInterval(() => {
-      nowTime.value = dayjs().format('YYYY-MM-DD HH:mm:ss')
+      nowTime.value = dayjs().format('HH:mm:ss')
     }, 1000)
 
     function handleOutSchool () {
@@ -144,6 +148,12 @@ export default defineComponent({
 </script>
 
 <style lang='scss' scoped>
+.time {
+  color: red;
+  font-weight: bold;
+  font-size: 80px;
+}
+
 .index {
   background-color: #f5f5f5;
   font-size: 32px;
@@ -179,7 +189,7 @@ export default defineComponent({
     p:nth-child(2){
         font-size: 64px;
       }
-    p:nth-child(n+3):nth-child(-n+5){
+    p:nth-child(n+3):nth-child(-n+6){
         font-size: 46px;
       }
   }
